@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Manajemen Nyeri Pinggang Saat Hamil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Lavender Bliss -->
+    <!-- Application Structure Plan: Menggunakan struktur Single Page Application (SPA) berbasis tab untuk navigasi non-linear yang berpusat pada pengguna. Struktur ini lebih baik daripada format dokumen linear karena memungkinkan pengguna (ibu hamil/tenaga medis) untuk langsung mengakses informasi yang paling relevan bagi mereka. Bagian-bagian utama: 1) Beranda (Dashboard dengan statistik kunci), 2) Mengapa Terjadi (kartu interaktif untuk penyebab), 3) Solusi Praktis (sub-navigasi untuk postur, senam, & terapi), 4) Waspada! (info krusial tentang tanda bahaya), dan 5) Studi Kasus (kuis interaktif untuk evaluasi). Pendekatan ini memprioritaskan kemudahan akses dan pengalaman pengguna yang lebih menarik. -->
+    <!-- Visualization & Content Choices: Informasi dari laporan diubah menjadi komponen interaktif. Statistik prevalensi (50-80%) -> Donut Chart (Chart.js) di Beranda untuk dampak visual. Penyebab Nyeri -> Kartu-kartu yang bisa diklik (Vanilla JS) untuk menyajikan info secara bertahap. Panduan Postur & Senam -> Representasi visual menggunakan HTML/CSS terstruktur dengan ikon Unicode, lebih baik daripada teks biasa. Studi Kasus -> Kuis interaktif (Vanilla JS) untuk memperkuat pembelajaran. Semua pilihan ini dibuat untuk meningkatkan keterlibatan pengguna tanpa menggunakan SVG atau Mermaid JS, sesuai dengan batasan teknis. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FAF5FF; }
+        .tab-button { transition: all 0.3s ease; }
+        .tab-button.active { border-color: #7e22ce; color: #7e22ce; background-color: #f5f3ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .chart-container { position: relative; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; height: 300px; max-height: 300px; }
+        .solution-card { border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 1rem; transition: all 0.3s ease; }
+        .solution-card:hover { transform: translateY(-4px); box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        .quiz-option { cursor: pointer; border: 2px solid transparent; }
+        .quiz-option.selected { border-color: #7e22ce; background-color: #f5f3ff; }
+        .quiz-option.correct { border-color: #16a34a; background-color: #f0fdf4; }
+        .quiz-option.incorrect { border-color: #dc2626; background-color: #fef2f2; }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-purple-700">Panduan Interaktif Nyeri Pinggang Kehamilan</h1>
+            <p class="mt-2 text-stone-600 max-w-3xl mx-auto">Sebuah modul digital untuk membantu Anda melewati masa kehamilan dengan lebih nyaman dan aman. Temukan penyebab, solusi praktis, dan kapan harus waspada.</p>
+        </header>
+
+        <nav class="mb-8 overflow-x-auto pb-2">
+            <div class="flex space-x-2 md:space-x-4 border-b border-stone-200 justify-center whitespace-nowrap">
+                <button data-tab="beranda" class="tab-button active font-semibold py-3 px-4 border-b-2">🏠 Beranda</button>
+                <button data-tab="penyebab" class="tab-button font-semibold py-3 px-4 border-b-2">🤔 Mengapa Terjadi?</button>
+                <button data-tab="solusi" class="tab-button font-semibold py-3 px-4 border-b-2">💡 Solusi Praktis</button>
+                <button data-tab="waspada" class="tab-button font-semibold py-3 px-4 border-b-2">⚠️ Waspada!</button>
+                <button data-tab="kasus" class="tab-button font-semibold py-3 px-4 border-b-2">👩‍⚕️ Studi Kasus</button>
+            </div>
+        </nav>
+
+        <main>
+            <div id="beranda" class="tab-content active animate-fade-in">
+                <section class="text-center">
+                    <h2 class="text-2xl font-semibold text-purple-700 mb-4">Anda Tidak Sendirian</h2>
+                    <p class="mb-6 max-w-2xl mx-auto">Nyeri pinggang bawah adalah salah satu keluhan paling umum selama kehamilan. Memahami kondisinya adalah langkah pertama untuk mengelolanya dengan baik.</p>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-semibold mb-2">Prevalensi Nyeri Pinggang pada Ibu Hamil</h3>
+                        <div class="chart-container">
+                            <canvas id="prevalenceChart"></canvas>
+                        </div>
+                        <p class="mt-4 text-stone-600">Studi menunjukkan bahwa <span class="font-bold text-purple-600">50% hingga 80%</span> wanita mengalami nyeri pinggang pada satu titik selama kehamilannya. Aplikasi ini dirancang untuk memberikan Anda solusi yang aman dan efektif.</p>
+                    </div>
+                </section>
+            </div>
+
+            <div id="penyebab" class="tab-content">
+                <section>
+                    <h2 class="text-2xl font-semibold text-purple-700 text-center mb-2">Memahami Akar Masalah</h2>
+                    <p class="text-center text-stone-600 mb-6">Nyeri pinggang saat hamil bisa terasa berbeda-beda. Mengenali jenisnya dapat membantu menentukan solusi yang tepat.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white p-5 rounded-lg border">
+                            <h3 class="font-semibold text-lg text-purple-700">Nyeri Pinggang Lumbal</h3>
+                            <p class="text-sm text-stone-600 mt-1">Mirip nyeri punggung biasa, terasa di sekitar pinggang dan bisa menjalar ke kaki. Biasanya disebabkan oleh ketegangan otot akibat perubahan postur.</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg border">
+                             <h3 class="font-semibold text-lg text-purple-700">Nyeri Panggul Posterior (PGP)</h3>
+                             <p class="text-sm text-stone-600 mt-1">Lebih umum terjadi, terasa lebih dalam di area bokong, sendi sakroiliaka, atau bagian belakang paha. Disebabkan oleh pelonggaran sendi panggul.</p>
+                        </div>
+                    </div>
+                    
+                    <p class="text-center text-stone-600 mb-8">Nyeri ini disebabkan oleh kombinasi perubahan luar biasa yang terjadi pada tubuh. Klik setiap kartu untuk mempelajari lebih lanjut.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="solution-card text-center" onclick="toggleDetail('detail-hormon')">
+                            <div class="text-4xl mb-3">🧬</div>
+                            <h3 class="font-semibold text-lg">Perubahan Hormonal</h3>
+                            <p class="text-sm text-stone-500">Hormon relaksin melunakkan ligamen.</p>
+                            <div id="detail-hormon" class="hidden mt-4 text-sm text-left text-stone-600">Hormon ini penting untuk persiapan persalinan, namun juga melemahkan penyokong tulang belakang, menyebabkan instabilitas dan nyeri.</div>
+                        </div>
+                        <div class="solution-card text-center" onclick="toggleDetail('detail-gravitasi')">
+                            <div class="text-4xl mb-3">⚖️</div>
+                            <h3 class="font-semibold text-lg">Pergeseran Pusat Gravitasi</h3>
+                            <p class="text-sm text-stone-500">Perut yang membesar mengubah postur.</p>
+                            <div id="detail-gravitasi" class="hidden mt-4 text-sm text-left text-stone-600">Tubuh cenderung condong ke belakang untuk menyeimbangkan, sehingga meningkatkan lengkungan tulang belakang dan menekan otot pinggang.</div>
+                        </div>
+                        <div class="solution-card text-center" onclick="toggleDetail('detail-berat')">
+                             <div class="text-4xl mb-3">📈</div>
+                            <h3 class="font-semibold text-lg">Kenaikan Berat Badan</h3>
+                            <p class="text-sm text-stone-500">Beban ekstra untuk tulang belakang.</p>
+                            <div id="detail-berat" class="hidden mt-4 text-sm text-left text-stone-600">Setiap kilogram berat badan tambahan memberikan beban lebih pada punggung dan sendi panggul Anda sepanjang hari.</div>
+                        </div>
+                        <div class="solution-card text-center" onclick="toggleDetail('detail-otot')">
+                             <div class="text-4xl mb-3">💪</div>
+                            <h3 class="font-semibold text-lg">Peregangan Otot Perut</h3>
+                            <p class="text-sm text-stone-500">Penopang alami punggung melemah.</p>
+                             <div id="detail-otot" class="hidden mt-4 text-sm text-left text-stone-600">Otot perut yang meregang (diastasis recti) mengurangi kemampuannya untuk menstabilkan panggul dan punggung, memindahkan lebih banyak beban ke otot pinggang.</div>
+                        </div>
+                         <div class="solution-card text-center" onclick="toggleDetail('detail-rahim')">
+                             <div class="text-4xl mb-3">🤰</div>
+                            <h3 class="font-semibold text-lg">Tekanan Rahim</h3>
+                            <p class="text-sm text-stone-500">Rahim menekan pembuluh darah & saraf.</p>
+                             <div id="detail-rahim" class="hidden mt-4 text-sm text-left text-stone-600">Pembesaran rahim dapat menekan saraf skiatik (sciatic nerve), menyebabkan nyeri tajam yang menjalar dari bokong ke kaki (skiatika).</div>
+                        </div>
+                        <div class="solution-card text-center" onclick="toggleDetail('detail-stres')">
+                            <div class="text-4xl mb-3">🧠</div>
+                            <h3 class="font-semibold text-lg">Stres Emosional</h3>
+                            <p class="text-sm text-stone-500">Ketegangan mental menjadi fisik.</p>
+                            <div id="detail-stres" class="hidden mt-4 text-sm text-left text-stone-600">Stres dapat menyebabkan otot-otot di seluruh tubuh menegang tanpa disadari, termasuk otot punggung, yang dapat memicu atau memperburuk nyeri.</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="solusi" class="tab-content">
+                <section>
+                    <h2 class="text-2xl font-semibold text-purple-700 text-center mb-2">Langkah Praktis untuk Meredakan Nyeri</h2>
+                    <p class="text-center text-stone-600 mb-8">Terapkan kebiasaan dan latihan sederhana ini dalam rutinitas harian Anda untuk merasakan perbedaannya.</p>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold mb-6">1. Perbaiki Postur & Gerakan Harian</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="flex flex-col items-center text-center">
+                                <img src="https://images.unsplash.com/photo-1580252189033-b4524c5357b9?w=400&h=300&fit=crop" alt="Ilustrasi postur duduk yang benar untuk ibu hamil" class="rounded-lg shadow-md mb-3 w-full max-w-xs object-cover aspect-[4/3]">
+                                <h4 class="font-semibold mb-2">🪑 Saat Duduk</h4>
+                                <p class="text-sm text-stone-600">Gunakan penyangga punggung, pastikan telapak kaki menapak rata di lantai.</p>
+                            </div>
+                            <div class="flex flex-col items-center text-center">
+                                <img src="https://images.unsplash.com/photo-1510865008582-74f6869a389f?w=400&h=300&fit=crop" alt="Ilustrasi postur berdiri yang benar untuk ibu hamil" class="rounded-lg shadow-md mb-3 w-full max-w-xs object-cover aspect-[4/3]">
+                                <h4 class="font-semibold mb-2">🚶‍♀️ Saat Berdiri</h4>
+                                <p class="text-sm text-stone-600">Bahu rileks ke belakang, jangan kunci lutut. Pindahkan tumpuan berat badan secara berkala.</p>
+                            </div>
+                            <div class="flex flex-col items-center text-center">
+                                <img src="https://images.unsplash.com/photo-1615531396229-1061b47834a3?w=400&h=300&fit=crop" alt="Ilustrasi posisi tidur yang benar untuk ibu hamil" class="rounded-lg shadow-md mb-3 w-full max-w-xs object-cover aspect-[4/3]">
+                                <h4 class="font-semibold mb-2">🛌 Saat Tidur</h4>
+                                <p class="text-sm text-stone-600">Miring ke kiri, tekuk lutut, dan letakkan bantal di antara lutut, di bawah perut, atau di belakang punggung.</p>
+                            </div>
+                            <div class="flex flex-col items-center text-center">
+                                <img src="https://images.unsplash.com/photo-1606823354432-b8b8f2a24c0f?w=400&h=300&fit=crop" alt="Ilustrasi cara mengangkat beban yang benar untuk ibu hamil" class="rounded-lg shadow-md mb-3 w-full max-w-xs object-cover aspect-[4/3]">
+                                <h4 class="font-semibold mb-2">📦 Saat Mengangkat</h4>
+                                <p class="text-sm text-stone-600">Tekuk lutut Anda, bukan pinggang. Jaga punggung tetap lurus dan angkat dengan kekuatan paha.</p>
+                            </div>
+                        </div>
+                        <div class="mt-8 bg-purple-50 p-4 rounded-lg border border-purple-200">
+                             <h4 class="font-semibold text-purple-800 mb-2">💡 Tips Harian Tambahan:</h4>
+                             <ul class="list-disc list-inside text-sm text-stone-700 space-y-1">
+                                <li>Saat bangkit dari tempat tidur, miringkan badan ke samping terlebih dahulu, lalu gunakan lengan untuk mendorong tubuh ke posisi duduk.</li>
+                                <li>Hindari memakai sepatu hak tinggi. Pilih alas kaki yang nyaman dan menopang lengkungan kaki dengan baik.</li>
+                                <li>Jangan berdiri terlalu lama. Jika harus, istirahatkan satu kaki di atas tumpuan rendah secara bergantian.</li>
+                                <li>Saat menyetir, atur kursi agar lebih tegak dan gunakan bantal kecil di belakang punggung bawah.</li>
+                             </ul>
+                        </div>
+                        <hr class="my-8">
+                        <h3 class="text-xl font-bold mb-6">2. Senam Hamil & Teknik Pernapasan</h3>
+                        <div class="space-y-8">
+                            <div class="md:flex md:items-center md:space-x-6">
+                                <img src="https://images.unsplash.com/photo-1594409730531-11d8d8f8a199?w=400&h=300&fit=crop" alt="Ilustrasi senam Goyangan Panggul" class="rounded-lg shadow-md w-full md:w-1/3 mb-3 md:mb-0 aspect-video md:aspect-[4/3] object-cover">
+                                <div class="md:w-2/3">
+                                    <h4 class="font-semibold">Goyangan Panggul (Pelvic Circles)</h4>
+                                    <p class="text-sm text-stone-600">Posisikan tubuh merangkak, lalu gerakkan panggul memutar perlahan (5 kali searah jarum jam, 5 kali berlawanan). Ini membantu melepaskan ketegangan.</p>
+                                </div>
+                            </div>
+                             <div class="md:flex md:items-center md:space-x-6">
+                                <img src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=300&fit=crop" alt="Ilustrasi senam Kemiringan Panggul" class="rounded-lg shadow-md w-full md:w-1/3 mb-3 md:mb-0 aspect-video md:aspect-[4/3] object-cover">
+                                <div class="md:w-2/3">
+                                    <h4 class="font-semibold">Kemiringan Panggul (Pelvic Tilt)</h4>
+                                    <p class="text-sm text-stone-600">Berbaring singkat, tekuk lutut, lalu kencangkan otot perut untuk menekan punggung bawah ke lantai. Tahan 5 detik, ulangi 10 kali.</p>
+                                </div>
+                            </div>
+                             <div class="md:flex md:items-center md:space-x-6">
+                                <img src="https://images.unsplash.com/photo-1599905292557-3364a2455805?w=400&h=300&fit=crop" alt="Ilustrasi senam Glute Bridge" class="rounded-lg shadow-md w-full md:w-1/3 mb-3 md:mb-0 aspect-video md:aspect-[4/3] object-cover">
+                                <div class="md:w-2/3">
+                                    <h4 class="font-semibold">Jembatan Bokong (Glute Bridge)</h4>
+                                    <p class="text-sm text-stone-600">Berbaring, tekuk lutut, telapak kaki di lantai. Angkat panggul hingga tubuh lurus dari bahu ke lutut. Tahan, lalu turun perlahan. Menguatkan bokong dan punggung.</p>
+                                </div>
+                            </div>
+                             <div class="md:flex md:items-center md:space-x-6">
+                                <img src="https://images.unsplash.com/photo-1609861614324-c10a300a8a66?w=400&h=300&fit=crop" alt="Ilustrasi teknik pernapasan diafragma" class="rounded-lg shadow-md w-full md:w-1/3 mb-3 md:mb-0 aspect-video md:aspect-[4/3] object-cover">
+                                <div class="md:w-2/3">
+                                    <h4 class="font-semibold">Pernapasan Diafragma</h4>
+                                    <p class="text-sm text-stone-600">Duduk nyaman, letakkan satu tangan di perut. Tarik napas lewat hidung, rasakan perut mengembang. Buang napas perlahan lewat mulut. Sangat baik untuk relaksi.</p>
+                                </div>
+                            </div>
+                        </div>
+                         <hr class="my-8">
+                         <h3 class="text-xl font-bold mb-4">3. Terapi Tambahan yang Aman</h3>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <p><span class="font-semibold">🌡️ Kompres Hangat/Dingin:</span> Gunakan kompres hangat untuk otot kaku, atau kompres dingin (dibalut handuk) untuk nyeri akut.</p>
+                            <p><span class="font-semibold">💆 Pijat Prenatal:</span> Pijat kehamilan oleh terapis bersertifikat dapat mengurangi ketegangan otot.</p>
+                            <p><span class="font-semibold">🎗️ Sabuk Penyangga Hamil:</span> Membantu mengangkat perut dan mengurangi beban pada punggung.</p>
+                            <p><span class="font-semibold">👟 Alas Kaki Tepat:</span> Sepatu dengan penyangga lengkung yang baik sangat penting untuk mengurangi guncangan.</p>
+                            <p><span class="font-semibold">🏊‍♀️ Terapi Air:</span> Berenang atau berjalan di dalam air dapat mengurangi tekanan pada sendi secara signifikan.</p>
+                            <p><span class="font-semibold">🪡 Akupunktur & Kiropraktik:</span> Dilakukan oleh ahli yang bersertifikat menangani ibu hamil, bisa menjadi pilihan efektif.</p>
+                         </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div id="waspada" class="tab-content">
+                 <section>
+                    <h2 class="text-2xl font-semibold text-red-600 text-center mb-2">Tanda Bahaya: Kapan Harus Menghubungi Dokter?</h2>
+                    <p class="text-center text-stone-600 mb-8">Nyeri pinggang umumnya normal, tetapi segera cari pertolongan medis jika Anda mengalami salah satu gejala di bawah ini.</p>
+                    <div class="bg-red-50 border border-red-200 p-6 rounded-xl">
+                        <ul class="space-y-4">
+                            <li class="flex items-start"><span class="text-xl mr-3">❗</span><div><span class="font-semibold">Nyeri Hebat atau Berirama:</span> Nyeri yang sangat parah, datang tiba-tiba, atau terasa seperti kram yang berulang bisa menjadi tanda persalinan prematur.</div></li>
+                            <li class="flex items-start"><span class="text-xl mr-3">🌡️</span><div><span class="font-semibold">Disertai Demam:</span> Jika nyeri punggung disertai demam atau menggigil, ini bisa menandakan adanya infeksi ginjal.</div></li>
+                            <li class="flex items-start"><span class="text-xl mr-3"> numbness</span><div><span class="font-semibold">Mati Rasa atau Lemah:</span> Kehilangan sensasi atau kelemahan pada kaki, bokong, atau area genital adalah tanda yang perlu diwaspadai.</div></li>
+                            <li class="flex items-start"><span class="text-xl mr-3">🦵</span><div><span class="font-semibold">Nyeri Menjalar:</span> Nyeri yang tajam dan menjalar ke salah satu atau kedua kaki hingga di bawah lutut (gejala skiatika parah).</div></li>
+                            <li class="flex items-start"><span class="text-xl mr-3">🩸</span><div><span class="font-semibold">Disertai Perdarahan:</span> Nyeri punggung yang dibarengi dengan perdarahan dari vagina harus segera diperiksakan.</div></li>
+                             <li class="flex items-start"><span class="text-xl mr-3">🚽</span><div><span class="font-semibold">Masalah Buang Air:</span> Kesulitan saat buang air kecil atau besar, atau tidak bisa menahannya.</div></li>
+                        </ul>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 p-6 rounded-xl mt-6">
+                        <h3 class="text-xl font-semibold text-blue-800 mb-3">Bagaimana dengan Obat Pereda Nyeri?</h3>
+                        <p class="text-blue-900"><span class="font-bold">Prinsip Utama:</span> Selalu konsultasikan dengan dokter atau bidan sebelum mengonsumsi obat apapun.</p>
+                        <ul class="list-disc list-inside mt-2 text-blue-900">
+                            <li><span class="font-semibold text-green-700">Dianggap Aman:</span> Asetaminofen (Parasetamol) umumnya aman jika digunakan sesuai dosis untuk jangka pendek.</li>
+                            <li><span class="font-semibold text-red-700">Harus Dihindari:</span> Obat anti-inflamasi non-steroid (OAINS) seperti Ibuprofen tidak direkomendasikan, terutama pada trimester akhir.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+            
+            <div id="kasus" class="tab-content">
+                <section>
+                    <h2 class="text-2xl font-semibold text-purple-700 text-center mb-2">Uji Pemahaman Anda</h2>
+                    <p class="text-center text-stone-600 mb-8">Mari kita terapkan pengetahuan Anda pada studi kasus berikut.</p>
+                     <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <p class="mb-4"><strong>Kasus:</strong> Ibu Ani, 28 tahun, hamil 30 minggu, bekerja di kantor. Ia mengeluh nyeri tumpul di pinggang bawah yang memburuk setelah duduk lama dan sulit tidur karenanya.</p>
+                        <div class="space-y-6">
+                            <div>
+                                <p class="font-semibold mb-2">1. Solusi mana yang paling tepat untuk mengatasi nyeri Ibu Ani saat bekerja?</p>
+                                <div class="space-y-2 quiz-options" data-question="1">
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 1, false)">A. Mengonsumsi ibuprofen secara rutin.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 1, true)">B. Menggunakan bantal penyangga pinggang dan berdiri secara berkala.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 1, false)">C. Mengabaikan nyeri karena dianggap normal.</div>
+                                </div>
+                                <div id="feedback-1" class="hidden mt-2 text-sm"></div>
+                            </div>
+                             <div>
+                                <p class="font-semibold mb-2">2. Posisi tidur apa yang paling dianjurkan untuk Ibu Ani?</p>
+                                <div class="space-y-2 quiz-options" data-question="2">
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 2, true)">A. Miring ke kiri dengan bantal di antara lutut.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 2, false)">B. Telentang agar punggung lurus.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 2, false)">C. Tengkurap untuk mengurangi tekanan.</div>
+                                </div>
+                                <div id="feedback-2" class="hidden mt-2 text-sm"></div>
+                            </div>
+                            <div>
+                                <p class="font-semibold mb-2">3. Latihan apa yang aman dilakukan Ibu Ani untuk membantu meredakan ketegangan pinggangnya?</p>
+                                <div class="space-y-2 quiz-options" data-question="3">
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 3, false)">A. Sit-up untuk menguatkan perut.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 3, true)">B. Goyangan Panggul (Pelvic Circles) secara perlahan.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 3, false)">C. Lari cepat di treadmill.</div>
+                                </div>
+                                <div id="feedback-3" class="hidden mt-2 text-sm"></div>
+                            </div>
+                            <div>
+                                <p class="font-semibold mb-2">4. Saat di rumah, Ibu Ani hendak memindahkan pot bunga yang cukup berat. Bagaimana cara mengangkat yang benar?</p>
+                                <div class="space-y-2 quiz-options" data-question="4">
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 4, true)">A. Meminta bantuan atau jika harus, tekuk lutut dengan punggung lurus.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 4, false)">B. Membungkukkan pinggang agar lebih cepat.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 4, false)">C. Menyeret pot tersebut dengan posisi menyamping.</div>
+                                </div>
+                                <div id="feedback-4" class="hidden mt-2 text-sm"></div>
+                            </div>
+                            <div>
+                                <p class="font-semibold mb-2">5. Jika nyeri pinggang Ibu Ani tiba-tiba disertai mati rasa pada kakinya, apa tindakan yang paling tepat?</p>
+                                <div class="space-y-2 quiz-options" data-question="5">
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 5, false)">A. Memijat area yang mati rasa sampai sensasinya kembali.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 5, false)">B. Beristirahat dan menunggu gejalanya hilang sendiri.</div>
+                                    <div class="quiz-option p-3 rounded-lg border" onclick="selectAnswer(this, 5, true)">C. Segera menghubungi dokter karena ini adalah tanda bahaya.</div>
+                                </div>
+                                <div id="feedback-5" class="hidden mt-2 text-sm"></div>
+                            </div>
+                        </div>
+                     </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="mt-12 pt-8 border-t border-stone-200 text-center">
+            <h3 class="font-semibold text-purple-700">Bagikan Modul Bermanfaat Ini</h3>
+            <p class="text-sm text-stone-600 mt-1 mb-4">Bantu ibu hamil lainnya mendapatkan informasi yang tepat.</p>
+            <button id="copyLinkBtn" class="bg-purple-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-purple-700 transition-colors">
+                Salin Tautan
+            </button>
+            <span id="copyFeedback" class="text-purple-700 font-semibold ml-3 hidden">Tautan disalin!</span>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+
+                    contents.forEach(c => c.classList.remove('active'));
+                    document.getElementById(target).classList.add('active');
+                });
+            });
+
+            const ctx = document.getElementById('prevalenceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mengalami Nyeri Pinggang', 'Tidak Mengalami'],
+                    datasets: [{
+                        data: [65, 35],
+                        backgroundColor: ['#7e22ce', '#d1d5db'],
+                        borderColor: ['#FAF5FF'],
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+
+            const copyBtn = document.getElementById('copyLinkBtn');
+            const copyFeedback = document.getElementById('copyFeedback');
+            copyBtn.addEventListener('click', () => {
+                const dummy = document.createElement('input');
+                const text = window.location.href;
+                document.body.appendChild(dummy);
+                dummy.value = text;
+                dummy.select();
+                try {
+                    document.execCommand('copy');
+                    copyFeedback.classList.remove('hidden');
+                    setTimeout(() => {
+                        copyFeedback.classList.add('hidden');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Gagal menyalin tautan: ', err);
+                }
+                document.body.removeChild(dummy);
+            });
+        });
+
+        function toggleDetail(detailId) {
+            const allDetails = document.querySelectorAll('.solution-card > div[id^="detail-"]');
+            allDetails.forEach(el => {
+                if (el.id !== detailId) {
+                    el.classList.add('hidden');
+                }
+            });
+            const detailElement = document.getElementById(detailId);
+            detailElement.classList.toggle('hidden');
+        }
+
+        function selectAnswer(element, questionId, isCorrect) {
+            const optionsContainer = element.parentElement;
+            const allOptions = optionsContainer.querySelectorAll('.quiz-option');
+            const feedbackEl = document.getElementById(`feedback-${questionId}`);
+
+            if (optionsContainer.classList.contains('answered')) return;
+            optionsContainer.classList.add('answered');
+
+            allOptions.forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            element.classList.add('selected');
+
+            if (isCorrect) {
+                element.classList.add('correct');
+                feedbackEl.textContent = "Tepat! Ini adalah solusi yang aman dan efektif.";
+                feedbackEl.className = 'mt-2 text-sm text-green-700';
+            } else {
+                element.classList.add('incorrect');
+                feedbackEl.textContent = "Kurang tepat. Coba perhatikan kembali materi tentang postur atau penggunaan obat yang aman.";
+                feedbackEl.className = 'mt-2 text-sm text-red-700';
+            }
+            feedbackEl.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+
